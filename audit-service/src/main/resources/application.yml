@@ -1,0 +1,34 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: audit-service
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    consumer:
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+    producer:
+      acks: all
+
+ir:
+  audit:
+    table-name: audit_log
+    endpoint: ${DYNAMODB_ENDPOINT:http://localhost:8000}
+    region: ${AWS_REGION:us-east-1}
+    create-table: ${AUDIT_CREATE_TABLE:true}
+  security:
+    issuer-uri: ${KEYCLOAK_ISSUER:http://localhost:8180/realms/incident-response}
+    jwk-set-uri: ${KEYCLOAK_JWKS:http://localhost:8180/realms/incident-response/protocol/openid-connect/certs}
+    audience: ir-api
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true

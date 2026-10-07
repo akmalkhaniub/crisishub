@@ -1,0 +1,38 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: case-service
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/cases}
+    username: ${DB_USER:ir}
+    password: ${DB_PASSWORD:ir}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    producer:
+      acks: all
+      properties:
+        enable.idempotence: true
+
+ir:
+  security:
+    # Must equal the token's `iss` — the URL the browser uses to reach Keycloak.
+    issuer-uri: ${KEYCLOAK_ISSUER:http://localhost:8180/realms/incident-response}
+    # Where this service fetches signing keys (internal Docker hostname in compose).
+    jwk-set-uri: ${KEYCLOAK_JWKS:http://localhost:8180/realms/incident-response/protocol/openid-connect/certs}
+    audience: ir-api
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true

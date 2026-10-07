@@ -1,0 +1,135 @@
+{
+  "realm": "incident-response",
+  "enabled": true,
+  "sslRequired": "external",
+  "bruteForceProtected": true,
+  "passwordPolicy": "length(8)",
+  "accessTokenLifespan": 300,
+  "roles": {
+    "realm": [
+      { "name": "member", "description": "Registered member who reports incidents" },
+      { "name": "operator", "description": "Operations centre: triage, assign, close" },
+      { "name": "responder", "description": "Field responder working assigned cases" },
+      { "name": "auditor", "description": "Compliance: read-only access incl. audit trail" },
+      {
+        "name": "admin",
+        "description": "Administrator (composite: operator + auditor)",
+        "composite": true,
+        "composites": { "realm": ["operator", "auditor"] }
+      }
+    ]
+  },
+  "groups": [
+    { "name": "Members", "path": "/Members", "realmRoles": ["member"] },
+    { "name": "Operations", "path": "/Operations", "realmRoles": ["operator"] },
+    { "name": "Field", "path": "/Field", "realmRoles": ["responder"] },
+    { "name": "Compliance", "path": "/Compliance", "realmRoles": ["auditor"] },
+    { "name": "Administrators", "path": "/Administrators", "realmRoles": ["admin"] }
+  ],
+  "clients": [
+    {
+      "clientId": "ir-portal",
+      "name": "Incident Response portal (SPA)",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "redirectUris": ["http://localhost:3000/*"],
+      "webOrigins": ["http://localhost:3000"],
+      "attributes": { "pkce.code.challenge.method": "S256", "post.logout.redirect.uris": "http://localhost:3000/*" },
+      "protocolMappers": [
+        {
+          "name": "audience-ir-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": { "included.custom.audience": "ir-api", "access.token.claim": "true", "id.token.claim": "false" }
+        }
+      ]
+    },
+    {
+      "clientId": "ir-cli",
+      "name": "DEMO ONLY: password grant for scripts/get-token.sh — disable outside local dev",
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "protocolMappers": [
+        {
+          "name": "audience-ir-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": { "included.custom.audience": "ir-api", "access.token.claim": "true", "id.token.claim": "false" }
+        }
+      ]
+    },
+    {
+      "clientId": "ir-api",
+      "name": "Audience for all resource servers (no flows enabled; replaces legacy bearer-only)",
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "implicitFlowEnabled": false
+    },
+    {
+      "clientId": "ir-case-service",
+      "name": "case-service machine identity (client credentials) for responder-service /internal calls",
+      "publicClient": false,
+      "secret": "${IR_CASE_SERVICE_SECRET:dev-only-change-me}",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "protocolMappers": [
+        {
+          "name": "audience-ir-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": { "included.custom.audience": "ir-api", "access.token.claim": "true", "id.token.claim": "false" }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "00000000-0000-0000-0000-000000000001", "username": "member1", "enabled": true,
+      "email": "member1@example.test", "emailVerified": true, "firstName": "Mia", "lastName": "Member",
+      "credentials": [{ "type": "password", "value": "demo1234", "temporary": false }],
+      "groups": ["/Members"]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000007", "username": "member2", "enabled": true,
+      "email": "member2@example.test", "emailVerified": true, "firstName": "Max", "lastName": "Member",
+      "credentials": [{ "type": "password", "value": "demo1234", "temporary": false }],
+      "groups": ["/Members"]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000002", "username": "op1", "enabled": true,
+      "email": "op1@example.test", "emailVerified": true, "firstName": "Olive", "lastName": "Operator",
+      "credentials": [{ "type": "password", "value": "demo1234", "temporary": false }],
+      "groups": ["/Operations"]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000004", "username": "resp1", "enabled": true,
+      "email": "resp1@example.test", "emailVerified": true, "firstName": "Riley", "lastName": "Responder",
+      "credentials": [{ "type": "password", "value": "demo1234", "temporary": false }],
+      "groups": ["/Field"]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000005", "username": "resp2", "enabled": true,
+      "email": "resp2@example.test", "emailVerified": true, "firstName": "Rowan", "lastName": "Responder",
+      "credentials": [{ "type": "password", "value": "demo1234", "temporary": false }],
+      "groups": ["/Field"]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000003", "username": "aud1", "enabled": true,
+      "email": "aud1@example.test", "emailVerified": true, "firstName": "Ada", "lastName": "Auditor",
+      "credentials": [{ "type": "password", "value": "demo1234", "temporary": false }],
+      "groups": ["/Compliance"]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000006", "username": "admin", "enabled": true,
+      "email": "admin@example.test", "emailVerified": true, "firstName": "Alex", "lastName": "Admin",
+      "credentials": [{ "type": "password", "value": "demo1234", "temporary": false }],
+      "groups": ["/Administrators"]
+    }
+  ]
+}
